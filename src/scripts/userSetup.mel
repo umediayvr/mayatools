@@ -1,0 +1,7 @@
+// umedia tools for maya
+python("import mayatools");
+python("mayatools.Startup.run()");
+
+// deadline
+source "deadline/DeadlineMayaClient.mel";
+source "deadline/SubmitMayaToDeadline.mel";
