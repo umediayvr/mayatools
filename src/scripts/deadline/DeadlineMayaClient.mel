@@ -124,6 +124,9 @@ global proc string GetMayaRepoPath()
 	return $MayaRepoPath;
 }
 
+// umedia
+// comment bellow piece of *junk* code
+/*
 string $path = GetMayaRepoPath();
 string $scriptPath = CheckSlashes( $path + "/SubmitMayaToDeadline.mel" );
 print("Running submission script \"" + $scriptPath + "\"\n");
@@ -132,3 +135,4 @@ if( `filetest -f $scriptPath` )
 	eval( "source \"" + $scriptPath + "\";" );
 else
 	warning( "The SubmitMayaToDeadline.mel script could not be found in the Deadline Repository. Please make sure that the Deadline Client has been installed on this machine, that the Deadline Client bin folder is set in the DEADLINE_PATH environment variable, and that the Deadline Client has been configured to point to a valid Repository." );
+*/
