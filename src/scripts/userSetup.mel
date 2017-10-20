@@ -1,0 +1,8 @@
+// umedia tools for maya
+python("import basetools");
+python("import mayatools");
+python("basetools.App.Hook.to('maya')");
+
+// deadline
+source "deadline/DeadlineMayaClient.mel";
+source "deadline/SubmitMayaToDeadline.mel";
