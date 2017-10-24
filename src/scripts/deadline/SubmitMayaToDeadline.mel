@@ -2992,6 +2992,9 @@ proc string WriteJobFilesAndSubmit( string $renderer, int $showDialog, int $regi
 		fprint $fileId ( "LimitGroups=" + `textFieldGrp -q -text frw_limitGroups` + "\n" );
 		fprint $fileId ( "JobDependencies=" + $jobDependencies + "\n" );
 
+		// umedia
+		fprint $fileId ( "IncludeEnvironment=True\n" );
+
 		if( `checkBox -q -value frw_isBlacklist` )
 		{
 			fprint $fileId ( "Blacklist=" + `textFieldGrp -q -text frw_machineList` + "\n" );
