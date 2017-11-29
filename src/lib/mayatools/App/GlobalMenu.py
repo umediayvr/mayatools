@@ -3,47 +3,67 @@ import maya.cmds as cmds
 
 class GlobalMenu(object):
     """
-    Simplifyied api to create a global menu in maya.
+    Simplified api to create/manage a global menu in maya.
 
     Example:
-        GlobalMenu.addItem("UMedia", "A/Foo", "print 'foo'")
-        GlobalMenu.addItem("UMedia", "A/B/Foo2", "print 'foo2'")
-        GlobalMenu.addSeparator("UMedia", "A/B")
-        GlobalMenu.addItem("UMedia", "A/B/Foo3", "print 'foo3'")
-        GlobalMenu.addSeparator("UMedia")
-        GlobalMenu.addItem("UMedia", "Foo4", "print 'foo4'")
+        def doSomething():
+            # ...
+
+        umediaMenu = GlobalMenu("UMedia")
+        umediaMenu.addItem("A/Foo", doSomething)
+        umediaMenu.addItem("A/B/Foo2", lambda: maya.mel.eval('...'))
+        umediaMenu.addSeparator("A/B")
     """
 
     __menus = {}
     __menuItems = {}
+    __menuCommands = {}
 
-    @staticmethod
-    def addItem(menuName, itemLabel, itemCommand):
+    def __init__(self, menuName):
+        """
+        Create a global menu object.
+        """
+        self.__name = menuName
+
+    def name(self):
+        """
+        Return the menu name.
+        """
+        return self.__name
+
+    def addItem(self, itemLabel, callableCommand):
         """
         Add an item to a global menu.
 
         In order to create submenus, separate the levels using "/":
         itemLabel="firstLevel/secondLevel/ThirdLevel..."
         """
-        parent = GlobalMenu.__buildSubMenus(
-            menuName,
+        assert callable(callableCommand), "callableCommand is not a callable"
+
+        parent = self.__buildSubMenus(
             os.path.dirname(itemLabel)
         )
 
         # creating entry
         cmds.menuItem(
             label=os.path.basename(itemLabel),
-            command=itemCommand,
+            command="import mayatools;mayatools.App.GlobalMenu.executeMenuCommand('{0}', '{1}')".format(
+                self.name(), itemLabel
+            ),
             parent=parent
         )
 
-    @staticmethod
-    def addSeparator(menuName, where=''):
+        # registering the menu command callable
+        if self.name() not in self.__menuCommands:
+            self.__menuCommands[self.name()] = {}
+        self.__menuCommands[self.name()][itemLabel] = callableCommand
+
+    def addSeparator(self, where=''):
         """
         Add a separator to the menu.
         """
         parent = GlobalMenu.__buildSubMenus(
-            menuName,
+            self.name(),
             where
         )
 
@@ -54,34 +74,39 @@ class GlobalMenu(object):
         )
 
     @staticmethod
-    def menu(name):
+    def executeMenuCommand(menuName, itemLabel):
+        """
+        Execute the command associated with the menu item.
+        """
+        return GlobalMenu.__menuCommands[menuName][itemLabel]()
+
+    def __mayaObjectId(self):
         """
         Return a maya's object id about a global menu name.
 
         In case the menu name does not exist, then the menu is created
         automatically.
         """
-        if name not in GlobalMenu.__menus:
-            GlobalMenu.__menus[name] = cmds.menu(
-                label=name,
+        if self.name() not in GlobalMenu.__menus:
+            GlobalMenu.__menus[self.name()] = cmds.menu(
+                label=self.name(),
                 parent='MayaWindow',
                 tearOff=True
             )
 
-        return GlobalMenu.__menus[name]
+        return GlobalMenu.__menus[self.name()]
 
-    @staticmethod
-    def __buildSubMenus(menuName, path):
+    def __buildSubMenus(self, path):
         """
         Build sub-menus for the input path (in case they don't exist).
 
         Maya's object id about the last level of the path is returned.
         @private
         """
-        parent = GlobalMenu.menu(menuName)
+        parent = self.__mayaObjectId()
 
         if path:
-            currentEntry = menuName
+            currentEntry = self.name()
             for level in path.split("/"):
                 currentEntry = os.path.join(currentEntry, level)
                 if currentEntry not in GlobalMenu.__menuItems:

@@ -1,6 +1,7 @@
 from .GlobalMenu import GlobalMenu
 from .MayaContext import MayaContext
 from basetools.App import Hook
+import maya.mel
 
 class MayaHook(Hook):
     """
@@ -23,11 +24,12 @@ class MayaHook(Hook):
         if not self.context().hasGUI():
             return
 
+        umediaMenu = GlobalMenu("UMedia")
+
         # items avaialble under umedia menu
-        GlobalMenu.addItem(
-            'UMedia',
+        umediaMenu.addItem(
             'Rendering/Send to the farm...',
-            'import maya.mel; maya.mel.eval("SubmitJobToDeadline()")'
+            lambda: maya.mel.eval("SubmitJobToDeadline()")
         )
 
 
