@@ -8140,6 +8140,19 @@ global proc SetupSubmission()
 	else
 		print( "Maya scene has not been modified, skipping save\n" );
 
+	// umedia
+	string $currentPrefix = `getAttr defaultRenderGlobals.imageFilePrefix`;
+	if( startsWith($currentPrefix, "<Scene>/") )
+	{
+		// Create the scene directory and save a copy of the work scene there for publish
+		string $currentScene = `file -q -sceneName`;
+		string $imageDir = $outputFilePath+GetStrippedSceneFileName();
+		string $makedir = "import os;os.makedirs('"+$imageDir+"')";
+		python($makedir);
+		string $copy = "import shutil;shutil.copy2('"+$currentScene+"','"+$imageDir+"')";
+		python($copy);
+	}
+
 	int $overrideLayerSettings = `checkBox -q -value frw_overrideLayerSettings` && $submitEachRenderLayer && $jobType == $MayaRenderJobType;
 	string $originalLayerList[] = getRenderableRenderLayers();
 	if( $overrideLayerSettings )
